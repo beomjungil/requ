@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 
@@ -12,10 +11,8 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "requ [HTTP file path]",
 	Short: "A convenient cli for IntelliJ HTTP client file",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(args)
-	},
-	Args: checkArgument,
+	Run:   main,
+	Args:  checkArgument,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
