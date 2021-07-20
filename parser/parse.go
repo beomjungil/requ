@@ -41,6 +41,13 @@ func parseHttpFile(list *[]model.HttpRequestConfig, str string) {
 		})
 	}
 
+	if strings.HasPrefix(str, "http") {
+		*list = append(*list, model.HttpRequestConfig{
+			Method: "GET",
+			Url:    str,
+		})
+	}
+
 	if strings.HasPrefix(str, "POST") {
 		*list = append(*list, model.HttpRequestConfig{
 			Method: "POST",
