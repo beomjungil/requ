@@ -1,71 +1,75 @@
 package parser
 
 import (
-	"bufio"
-	"log"
-	"os"
+	"io/ioutil"
 	"strings"
 
 	"github.com/go-requ/requ/model"
 )
 
 func Parse(filePath string) ([]model.HttpRequestConfig, error) {
-
-	file, err := os.Open(filePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
 	requestList := make([]model.HttpRequestConfig, 0)
 
-	scanner := bufio.NewScanner(file)
+	data, err := ioutil.ReadFile(filePath)
 
-	for scanner.Scan() {
-		text := scanner.Text()
-		parseHttpFile(&requestList, text)
+	if err != nil {
+		return nil, err
 	}
 
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+	rawRequests := strings.Split(string(data), "###\n")
+
+	for _, rawReq := range rawRequests {
+		parseHttpFile(&requestList, strings.TrimSpace(rawReq))
 	}
 
 	return requestList, nil
 }
 
 func parseHttpFile(list *[]model.HttpRequestConfig, str string) {
-	if strings.HasPrefix(str, "GET") {
+	lines := strings.Split(str, "\n")
+
+	method, url := func() (string, string) {
+		switch firstLine := lines[0]; {
+		case strings.HasPrefix(firstLine, "POST"):
+			return "POST", strings.Split(firstLine, " ")[1]
+		case strings.HasPrefix(firstLine, "PUT"):
+			return "PUT", strings.Split(firstLine, " ")[1]
+		case strings.HasPrefix(firstLine, "DELETE"):
+			return "DELETE", strings.Split(firstLine, " ")[1]
+		case strings.HasPrefix(firstLine, "GET"):
+			return "GET", strings.Split(firstLine, " ")[1]
+		default:
+			return "GET", firstLine
+		}
+	}()
+
+	if len(lines) == 0 {
 		*list = append(*list, model.HttpRequestConfig{
-			Method: "GET",
-			Url:    strings.Split(str, " ")[1],
+			Method: method,
+			Url:    url,
 		})
+		return
 	}
 
-	if strings.HasPrefix(str, "http") {
-		*list = append(*list, model.HttpRequestConfig{
-			Method: "GET",
-			Url:    str,
-		})
-	}
+	headerAndBody := lines[1:]
 
-	if strings.HasPrefix(str, "POST") {
-		*list = append(*list, model.HttpRequestConfig{
-			Method: "POST",
-			Url:    strings.Split(str, " ")[1],
-		})
-	}
+	headers, body := func() (map[string]string, string) {
+		m := map[string]string{}
 
-	if strings.HasPrefix(str, "PUT") {
-		*list = append(*list, model.HttpRequestConfig{
-			Method: "PUT",
-			Url:    strings.Split(str, " ")[1],
-		})
-	}
+		for i := 0; len(headerAndBody) != 0 && headerAndBody[0] != ""; i++ {
+			splitted := strings.SplitN(headerAndBody[0], ":", 2)
+			m[splitted[0]] = strings.TrimSpace(splitted[1])
 
-	if strings.HasPrefix(str, "DELETE") {
-		*list = append(*list, model.HttpRequestConfig{
-			Method: "DELETE",
-			Url:    strings.Split(str, " ")[1],
-		})
-	}
+			headerAndBody = headerAndBody[1:]
+		}
+
+		return m, strings.TrimSpace(strings.Join(headerAndBody, "\n"))
+	}()
+
+	*list = append(*list, model.HttpRequestConfig{
+		Method:  method,
+		Url:     url,
+		Headers: headers,
+		Body:    body,
+	})
 }

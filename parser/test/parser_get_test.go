@@ -40,11 +40,3 @@ func TestGetWithHeader(t *testing.T) {
 	assert.Equal(t, result[0].Method, "GET", "Method must be 'GET'")
 	assert.Equal(t, result[0].Headers, test_header, "Header must be Content-Type: application/json")
 }
-
-func TestGetWithBody(t *testing.T) {
-	result, _ := parser.Parse("./__mock__/get_with_body_test.http")
-
-	assert.Equal(t, len(result), 1, "Length must be '1'")
-	assert.Equal(t, result[0].Method, "GET", "Method must be 'GET'")
-	assert.Equal(t, result[0].Body, "", "GET should ignore body")
-}
