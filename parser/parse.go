@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/go-requ/requ/model"
+	"github.com/thoas/go-funk"
 )
 
 func Parse(filePath string) ([]model.HttpRequestConfig, error) {
@@ -26,7 +27,9 @@ func Parse(filePath string) ([]model.HttpRequestConfig, error) {
 }
 
 func parseHttpFile(list *[]model.HttpRequestConfig, str string) {
-	lines := strings.Split(str, "\n")
+	lines := funk.FilterString(strings.Split(str, "\n"), func(s string) bool {
+		return !strings.HasPrefix(s, "#") && !strings.HasPrefix(s, "@")
+	})
 
 	method, url := func() (string, string) {
 		switch firstLine := lines[0]; {
