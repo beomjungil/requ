@@ -12,13 +12,18 @@ import (
 
 func main(cmd *cobra.Command, args []string) {
 	var filePath string = args[0]
-	var configList, err = parser.Parse(filePath)
+	var configList, err = parser.Parse(filePath, variableFilePath)
 	if err != nil {
 		fmt.Println(configList)
 	}
 
 	config, err := selectFromConfigList(configList)
-	network.Request(config)
+
+	if err != nil {
+		network.Request(config)
+	} else {
+		panic(err)
+	}
 }
 
 func selectFromConfigList(configList []model.HttpRequestConfig) (model.HttpRequestConfig, error) {

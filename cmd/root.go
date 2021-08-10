@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var variableFilePath string
+
 var rootCmd = &cobra.Command{
 	Use:   "requ [HTTP file path]",
 	Short: "A convenient cli for IntelliJ HTTP client file",
@@ -25,6 +27,7 @@ func init() {
 	// TODO: Add Variable related option here.
 	// rootCmd.PersistentFlags().StringVar(&httpFile, "httpFile", "", "Http file path (ex: test.http or test.rest)")
 	// rootCmd.MarkPersistentFlagRequired("httpFile")
+	rootCmd.PersistentFlags().StringVarP(&variableFilePath, "variable", "v", "", "Http Varable file path")
 }
 
 func checkArgument(cmd *cobra.Command, args []string) error {
@@ -42,6 +45,17 @@ func checkArgument(cmd *cobra.Command, args []string) error {
 	// When file is not exist
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return errors.New("invalid HTTP file path. file does not exist")
+	}
+
+	if variableFilePath != "" {
+		if !strings.HasSuffix(variableFilePath, ".json") {
+			return errors.New("invalid HTTP variable file. extension must be .json")
+		}
+
+		// When Variable file is not exist
+		if _, err := os.Stat(variableFilePath); os.IsNotExist(err) {
+			return errors.New("invalid HTTP variable file path. file does not exist")
+		}
 	}
 
 	return nil
