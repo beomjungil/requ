@@ -8,7 +8,7 @@ import (
 )
 
 func TestSimpleGet(t *testing.T) {
-	result, _ := parser.Parse("./__mock__/simple_get_test.http")
+	result, _ := parser.Parse("./__mock__/simple_get_test.http", "")
 
 	assert.Equal(t, len(result), 1, "Length must be '1'")
 	assert.Equal(t, result[0].Method, "GET", "Method must be 'GET'")
@@ -16,7 +16,7 @@ func TestSimpleGet(t *testing.T) {
 }
 
 func TestGetWithoutMethod(t *testing.T) {
-	result, _ := parser.Parse("./__mock__/get_without_method_test.http")
+	result, _ := parser.Parse("./__mock__/get_without_method_test.http", "")
 
 	assert.Equal(t, len(result), 1, "Length must be '1'")
 	assert.Equal(t, result[0].Method, "GET", "Method must be 'GET'")
@@ -24,7 +24,7 @@ func TestGetWithoutMethod(t *testing.T) {
 }
 
 func TestMultiGet(t *testing.T) {
-	result, _ := parser.Parse("./__mock__/multi_get_test.http")
+	result, _ := parser.Parse("./__mock__/multi_get_test.http", "")
 
 	assert.Equal(t, len(result), 3, "Length must be '3'")
 }
@@ -34,7 +34,7 @@ func TestGetWithHeader(t *testing.T) {
 		"Content-Type":  "application/json",
 		"Authorization": "Bearer test",
 	}
-	result, _ := parser.Parse("./__mock__/get_with_header_test.http")
+	result, _ := parser.Parse("./__mock__/get_with_header_test.http", "")
 
 	assert.Equal(t, len(result), 1, "Length must be '1'")
 	assert.Equal(t, result[0].Method, "GET", "Method must be 'GET'")

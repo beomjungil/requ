@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"strings"
 
@@ -8,22 +10,49 @@ import (
 	"github.com/thoas/go-funk"
 )
 
-func Parse(filePath string) ([]model.HttpRequestConfig, error) {
+func Parse(filePath string, variableFilePath string) ([]model.HttpRequestConfig, error) {
 	requestList := make([]model.HttpRequestConfig, 0)
 
 	data, err := ioutil.ReadFile(filePath)
-
 	if err != nil {
 		return nil, err
 	}
 
-	rawRequests := strings.Split(string(data), "###\n")
+	dataWithVariable, err := ReplaceVariable(string(data), variableFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	rawRequests := strings.Split(dataWithVariable, "###\n")
 
 	for _, rawReq := range rawRequests {
 		parseHttpFile(&requestList, strings.TrimSpace(rawReq))
 	}
 
 	return requestList, nil
+}
+
+func ReplaceVariable(data string, variableFilePath string) (string, error) {
+	if variableFilePath == "" {
+		return data, nil
+	}
+
+	variable, err := ioutil.ReadFile(variableFilePath)
+	if err != nil {
+		return "", err
+	}
+
+	variableMap := make(map[string]string)
+	err = json.Unmarshal(variable, &variableMap)
+	if err != nil {
+		return "", err
+	}
+
+	for key, value := range variableMap {
+		data = strings.Replace(data, fmt.Sprintf("{{%s}}", key), value, -1)
+	}
+
+	return data, nil
 }
 
 func parseHttpFile(list *[]model.HttpRequestConfig, str string) {
